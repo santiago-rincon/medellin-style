@@ -1,3 +1,6 @@
+import { type Timestamp } from '@angular/fire/firestore';
+import { Subscription } from 'rxjs';
+
 export interface ServiceBentoItem {
   title: string;
   description: string;
@@ -10,6 +13,11 @@ export interface ServiceBentoItem {
 export interface BarberInfo {
   name: string;
   phone: string;
+  uuid: string;
+  firstTurn: number;
+  lastTurn: number;
+  steps: number;
+  rest: [number, number];
 }
 
 export interface BarberService {
@@ -18,11 +26,26 @@ export interface BarberService {
   price: number;
 }
 
+export interface Turn {
+  barberName: string;
+  barberPhone: string;
+  clientName: string;
+  clientPhone: string;
+  date: Timestamp;
+  service: string;
+  uuidBarber: string;
+  uuidClient: string;
+}
+
+export interface HandleSuscription {
+  id: string;
+  suscription: Subscription | undefined;
+}
+
 export interface Environments {
   production: boolean;
   localName: string;
   direction: string;
-  barbers: BarberInfo[];
   services: BarberService[];
   schedule: string;
   ubication: string;

@@ -6,5 +6,5 @@ html {
 }
 .p-dialog-mask {
   backdrop-filter: blur(7px);
-  pointer-events: none;
+  pointer-events: all;
 }

@@ -8,6 +8,7 @@ import { routes } from './app.routes';
 import { environment } from 'src/environments/environment.development';
 import { FireAuthService } from '@services/fire-auth.service';
 import { provideToastr } from 'ngx-toastr';
+import { FirestoreService } from '@services/firestore.service';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
@@ -19,5 +20,6 @@ export const appConfig: ApplicationConfig = {
     importProvidersFrom(provideAuth(() => getAuth())),
     importProvidersFrom(provideFirestore(() => getFirestore())),
     FireAuthService,
+    FirestoreService,
   ],
 };

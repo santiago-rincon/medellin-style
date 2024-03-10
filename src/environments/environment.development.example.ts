@@ -4,12 +4,6 @@ export const environment: Environments = {
   production: false,
   localName: 'Medellín Style',
   direction: 'Calle 1 # 1 - 1',
-  barbers: [
-    {
-      name: 'Will',
-      phone: '300000000',
-    },
-  ],
   services: [
     { id: 0, service: 'Corte de cabello', price: 15000 },
     { id: 1, service: 'Corte de barba', price: 5000 },

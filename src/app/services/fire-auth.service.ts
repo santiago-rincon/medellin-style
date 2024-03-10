@@ -16,9 +16,6 @@ export class FireAuthService {
   private readonly auth: Auth = inject(Auth);
   private readonly toastSvc = inject(ToastrService);
   currentUser$ = user(this.auth);
-  constructor() {
-    console.log('Init service');
-  }
   registerWithEmailAndPassword(email: string, password: string) {
     return createUserWithEmailAndPassword(this.auth, email, password);
   }

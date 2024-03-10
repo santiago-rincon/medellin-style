@@ -18,10 +18,11 @@
       <div class="flex flex-col md:max-w-[272px] w-full">
         <label for="time" class="font-bold block mb-2">Barbero:</label>
         <p-dropdown
+          (onChange)="changeBarber($event.value)"
           formControlName="barber"
           [options]="barbers"
           optionLabel="name"
-          optionValue="name"
+          optionValue="uuid"
           [showClear]="true"
           inputId="time"
           styleClass="@apply w-full border border-neutral-800/30 rounded-lg dark:border-none shadow-none"
@@ -107,10 +108,12 @@
       </div>
       <div class="flex flex-col md:max-w-[272px] w-full">
         <label for="time" class="font-bold block mb-2">Hora:</label>
+        <!-- TODO:Agregar evento de cambio -->
         <p-dropdown
           [options]="hours"
-          optionLabel="hour"
-          optionValue="hourF"
+          emptyMessage="Selecciona un barbero o cambia la fecha"
+          optionLabel="hourF"
+          optionValue="hour"
           formControlName="hour"
           [showClear]="true"
           inputId="time"
@@ -127,3 +130,4 @@
     </button>
   </div>
 </form>
+{{ suscriptions.length }}

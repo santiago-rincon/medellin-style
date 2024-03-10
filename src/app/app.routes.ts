@@ -24,6 +24,11 @@ export const routes: Routes = [
       import('@pages/sign/sign.component').then(c => c.SignComponent),
   },
   {
+    path: 'profile',
+    loadComponent: () =>
+      import('@pages/profile/profile.component').then(c => c.ProfileComponent),
+  },
+  {
     path: '**',
     redirectTo: 'home',
   },
