@@ -1,0 +1,62 @@
+<form
+  class="w-full flex flex-col gap-y-3 h-full justify-between"
+  [formGroup]="registerForm"
+  (submit)="register()">
+  <h3 class="uppercase text-center text-balance text-2xl font-bold">
+    Registro
+  </h3>
+  <div class="flex flex-col gap-y-2">
+    <label for="repPass" class="font-semibold">Nombre completo:</label>
+    <p-inputGroup>
+      <p-inputGroupAddon>
+        <i class="pi pi-user"></i>
+      </p-inputGroupAddon>
+      <input
+        type="text"
+        pInputText
+        formControlName="name"
+        class="rounded-s-none w-full h-full ps-2 border border-neutral-800/20 dark:border-none dark:bg-[#111827] focus:outline-none"
+        placeholder="Carlos Ramírez"
+        id="repPass" />
+    </p-inputGroup>
+  </div>
+  <div class="flex flex-col gap-y-2">
+    <label for="mail" class="font-semibold">Correo electrónico:</label>
+    <p-inputGroup>
+      <p-inputGroupAddon>
+        <i class="pi pi-envelope"></i>
+      </p-inputGroupAddon>
+      <input
+        type="email"
+        pInputText
+        formControlName="email"
+        class="rounded-s-none w-full h-full ps-2 border border-neutral-800/20 dark:border-none dark:bg-[#111827] focus:outline-none"
+        placeholder="usuario@gmail.com"
+        id="mail" />
+    </p-inputGroup>
+  </div>
+  <div class="flex flex-col gap-y-2">
+    <label for="pass" class="font-semibold">Contraseña:</label>
+    <p-inputGroup>
+      <p-inputGroupAddon>
+        <i class="pi pi-lock"></i>
+      </p-inputGroupAddon>
+      <input
+        type="password"
+        pInputText
+        formControlName="password"
+        class="rounded-s-none w-full h-full ps-2 border border-neutral-800/20 dark:border-none dark:bg-[#111827] focus:outline-none"
+        placeholder="•••••••••••••••••••"
+        id="pass" />
+    </p-inputGroup>
+  </div>
+  <button
+    [disabled]="registerForm.invalid || loading"
+    type="submit"
+    class="mx-auto w-1/2 text-[var(--primary-color)] font-semibold rounded-xl text-center border border-[var(--primary-color)] py-2 px-4 hover:bg-[var(--primary-color)] hover:text-white dark:hover:text-white/90 transition-colors duration-300 disabled:pointer-events-none disabled:opacity-60">
+    {{ loading ? 'Registrando' : 'Registrar' }}
+    @if (loading) {
+      <i class="pi pi-spin pi-spinner"></i>
+    }
+  </button>
+</form>

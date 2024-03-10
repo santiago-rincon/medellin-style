@@ -1,0 +1,12 @@
+<p-menubar
+  [model]="items"
+  styleClass="@apply rounded-none sticky top-0 z-[100] border border-b-black/25 dark:border-b-white/15 border-x-0 border-t-0">
+  <ng-template pTemplate="end">
+    <p-button
+      class="text-[var(--primary-color)]"
+      [icon]="toggleIcon"
+      size="large"
+      [rounded]="true"
+      (onClick)="onClick()" />
+  </ng-template>
+</p-menubar>

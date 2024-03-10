@@ -1,0 +1,11 @@
+<h4 class="text-balance text-2xl font-semibold mb-4">
+  {{ service.title }}
+</h4>
+<p class="text-pretty">{{ service.description }}</p>
+<div
+  class="absolute w-full h-full bg-cover bg-no-repeat -z-20 right-0 top-0 rounded-xl group-hover:scale-105 transition-transform duration-700 {{
+    service.class
+  }}"
+  style="background-image: url('{{ service.image }}')"></div>
+<div
+  class="rounded-xl -z-10 absolute w-full h-full inset-0 bg-gradient-to-t from-gray-100/90 via-gray-200/70 to-transparent dark:from-neutral-900/90 dark:via-neutral-700/90 dark:to-neutral-600/50"></div>

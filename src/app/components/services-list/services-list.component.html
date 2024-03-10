@@ -1,0 +1,19 @@
+<section class="p-10">
+  <h3 class="text-4xl font-semibold text-center text-balance">
+    Servicios que ofrecemos
+  </h3>
+  <p class="text-lg text-pretty mt-4 text-center">
+    En {{ localName }} disponemos de diferentes servicios adaptados a tus
+    necesidades y estilo personal.
+  </p>
+  <div
+    class="max-w-5xl mx-auto mt-4 grid grid-cols-10 gap-5 auto-rows-[35rem] md:auto-rows-[32rem] lg:auto-rows-[30rem] z-0">
+    @for (service of services; track $index) {
+      <app-bento-item
+        [service]="service"
+        class="{{ service.colSpanDesktop }} {{
+          service.colSpanMobile
+        }} border border-black/20 shadow-lg dark:border-white/20 rounded-xl p-5 flex justify-end flex-col relative group overflow-hidden" />
+    }
+  </div>
+</section>

@@ -1,0 +1,129 @@
+<form
+  [formGroup]="scheduleForm"
+  class="max-w-5xl w-full mx-auto py-10"
+  (submit)="onSubmit()">
+  <h2 class="font-bold text-balance text-3xl text-center uppercase px-4">
+    Agenda tu cita en Medellín Style
+  </h2>
+  <div
+    class="flex flex-col items-center mt-5 max-w-xl mx-auto gap-y-3 px-8 sm:px-4 md:px-0">
+    <p-divider
+      align="left"
+      type="solid"
+      class="w-full [&>div]:before:h-[1px] [&>div]:before:border [&>div]:before:border-neutral-800/20 [&>div]:before:dark:border-neutral-500/50 [&>div>div]:dark:bg-[#121212]">
+      <b>Barbero y servicio</b>
+    </p-divider>
+    <!-- Barber and service -->
+    <div class="flex flex-col gap-y-5 md:flex-row justify-between w-full">
+      <div class="flex flex-col md:max-w-[272px] w-full">
+        <label for="time" class="font-bold block mb-2">Barbero:</label>
+        <p-dropdown
+          formControlName="barber"
+          [options]="barbers"
+          optionLabel="name"
+          optionValue="name"
+          [showClear]="true"
+          inputId="time"
+          styleClass="@apply w-full border border-neutral-800/30 rounded-lg dark:border-none shadow-none"
+          placeholder="Elige barbero"></p-dropdown>
+      </div>
+      <div class="flex flex-col md:max-w-[272px] w-full">
+        <label for="time" class="font-bold block mb-2">Servicios:</label>
+        <p-dropdown
+          formControlName="service"
+          [options]="services"
+          optionLabel="service"
+          optionValue="id"
+          [showClear]="true"
+          inputId="time"
+          styleClass="@apply w-full border border-neutral-800/30 rounded-lg dark:border-none shadow-none"
+          placeholder="Elige un servicio"></p-dropdown>
+      </div>
+    </div>
+    <span class="w-full pt-2">
+      <strong>Total del servicio: </strong>
+      @if (scheduleForm.value.service === null) {
+        {{ '0' | currency: '$' : 'symbol' : '0.0' }}
+      } @else {
+        {{
+          services[scheduleForm.value.service ?? 0].price
+            | currency: '$' : 'symbol' : '3.0'
+        }}
+      }
+    </span>
+    <p-divider
+      align="left"
+      type="solid"
+      class="w-full [&>div]:before:h-[1px] [&>div]:before:border [&>div]:before:border-neutral-800/20 [&>div]:before:dark:border-neutral-500/50 [&>div>div]:dark:bg-[#121212]">
+      <b>Tú información</b>
+    </p-divider>
+    <!-- Name and phone -->
+    <div class="flex flex-col gap-y-5 md:flex-row justify-between w-full">
+      <div class="flex flex-col gap-y-2">
+        <label for="name" class="font-semibold">Nombre:</label>
+        <p-inputGroup>
+          <p-inputGroupAddon>
+            <i class="pi pi-user"></i>
+          </p-inputGroupAddon>
+          <input
+            pInputText
+            formControlName="client"
+            class="rounded-s-none md:max-w-56 w-full h-full ps-2 border border-neutral-800/20 dark:border-none dark:bg-[#111827] focus:outline-none"
+            placeholder="Carlos Ramírez"
+            id="name" />
+        </p-inputGroup>
+      </div>
+      <div class="flex flex-col gap-y-2">
+        <label for="phone" class="font-semibold">Teléfono:</label>
+        <p-inputGroup>
+          <p-inputGroupAddon>
+            <i class="pi pi-phone"></i>
+          </p-inputGroupAddon>
+          <p-inputMask
+            formControlName="phone"
+            inputId="phone"
+            mask="999-999-9999"
+            placeholder="300-355-9999"
+            class="w-full"
+            styleClass="@apply rounded-s-none md:max-w-56 w-full h-full ps-2 border border-neutral-800/20 dark:border-none focus:shadow-none"></p-inputMask>
+        </p-inputGroup>
+      </div>
+    </div>
+    <!-- Date and hour -->
+    <div class="flex flex-col gap-y-5 md:flex-row justify-between w-full">
+      <div class="flex flex-col md:max-w-[272px] w-full">
+        <label for="date" class="font-bold block mb-2">Fecha:</label>
+        <p-calendar
+          [iconDisplay]="'input'"
+          [showIcon]="true"
+          inputId="date"
+          formControlName="date"
+          dateFormat="dd/mm/yy"
+          [showButtonBar]="true"
+          [minDate]="minDate"
+          placeholder="{{ minDate | date: 'dd/MM/yyyy' }}"
+          [disabledDays]="disabledDates"
+          styleClass="@apply w-full h-12 border border-neutral-800/30 rounded-lg dark:border-none [&>input]:ps-3 [&>input]:shadow-none [&>div>.p-datepicker-buttonbar]:px-10"></p-calendar>
+      </div>
+      <div class="flex flex-col md:max-w-[272px] w-full">
+        <label for="time" class="font-bold block mb-2">Hora:</label>
+        <p-dropdown
+          [options]="hours"
+          optionLabel="hour"
+          optionValue="hourF"
+          formControlName="hour"
+          [showClear]="true"
+          inputId="time"
+          styleClass="@apply w-full border border-neutral-800/30 rounded-lg dark:border-none shadow-none"
+          placeholder="Selecciona una hora"></p-dropdown>
+      </div>
+    </div>
+    <button
+      [disabled]="scheduleForm.invalid && false"
+      type="submit"
+      class="text-[var(--primary-color)] mt-3 font-semibold rounded-full text-center border border-[var(--primary-color)] py-2 px-4 hover:bg-[var(--primary-color)] hover:text-white dark:hover:text-white/90 transition-colors duration-300 disabled:pointer-events-none disabled:opacity-60">
+      Agendar cita
+      <i class="ms-1 pi pi-calendar-plus"></i>
+    </button>
+  </div>
+</form>

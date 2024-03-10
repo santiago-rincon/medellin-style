@@ -1,0 +1,14 @@
+{
+  "targets": {
+    "medellin-style-a2a4e": {
+      "hosting": {
+        "baber-turns": [
+          "medellin-style-a2a4e"
+        ]
+      }
+    }
+  },
+  "projects": {
+    "default": "medellin-style-a2a4e"
+  }
+}

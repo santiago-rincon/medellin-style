@@ -1,0 +1,10 @@
+@tailwind base;
+@import 'node_modules/primeng/resources/primeng.min.css';
+@tailwind utilities;
+html {
+  scrollbar-width: none;
+}
+.p-dialog-mask {
+  backdrop-filter: blur(7px);
+  pointer-events: none;
+}

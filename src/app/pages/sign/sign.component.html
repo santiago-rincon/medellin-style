@@ -1,0 +1,34 @@
+<div
+  class="h-[75vh] md:h-auto mx-4 max-w-4xl shadow-2xl shadow-gray-600 dark:shadow-gray-50/10 my-10 min-[910px]:mx-auto flex flex-col md:flex-row rounded-xl relative overflow-hidden">
+  <div
+    class="hidden bg-[var(--primary-color)] dark:bg-[#374151] justify-around w-1/2 h-full rounded-xl right-0 md:flex flex-col absolute bg-cover z-10 transition-transform duration-1000 ease-out has-[:checked]:-translate-x-full">
+    <h2
+      class="uppercase text-center text-white/90 text-balance font-bold text-4xl px-2 order-1 [text-shadow:_2px_2px_1px_black]">
+      Bienvenido a {{ localName }}!!
+    </h2>
+    <label
+      class="font-semibold transition-colors w-fit text-base mx-auto uppercase text-white/80 peer before:content-['Regístrate'] order-3 border border-white rounded-2xl py-1 px-4 hover:cursor-pointer hover:bg-white/80 hover:text-[var(--primary-color)] has-[:checked]:before:content-['Iniciar_sesión']">
+      <input type="checkbox" class="hidden" />
+    </label>
+    <p
+      class="order-2 text-xl w-3/4 mx-auto text-white/80 hidden peer-has-[:checked]:block">
+      ¿Ya tienes una cuenta? Inicia sesión para consultar y agendar tus citas.
+      Haz clic en el siguiente botón.
+    </p>
+    <p
+      class="text-pretty order-2 text-xl w-3/4 mx-auto text-white/80 peer-has-[:checked]:hidden">
+      Regístrate para agendar tus citas. Si aún no tienes una cuenta puedes
+      registrarte haciendo clic en el siguiente botón.
+    </p>
+  </div>
+  <label
+    class="absolute bottom-5 md:hidden peer/sm before:content-['Si_aún_no_tienes_una_cuenta_has_click_aquí:'] after:content-['_Regístrate:'] after:text-blue-600 after: font-bold has-[:checked]:before:content-['Si_ya_tienes_una_cuenta_has_click_aquí:'] has-[:checked]:after:content-['_Iniciar_sesión'] px-8">
+    <input type="checkbox" class="hidden" />
+  </label>
+  <!-- Login -->
+  <app-login-form
+    class="peer-has-[:checked]/sm:-translate-x-full transition-transform absolute w-full top-0 h-[90%] md:h-auto md:block md:w-1/2 md:translate-x-0 md:peer-has-[:checked]/sm:translate-x-0 md:static px-8 py-10" />
+  <!-- Register -->
+  <app-register-form
+    class="translate-x-full peer-has-[:checked]/sm:translate-x-0 transition-transform absolute w-full top-0 h-[90%] md:h-auto md:block md:w-1/2 md:static md:translate-x-0 px-8 py-10" />
+</div>
