@@ -39,7 +39,11 @@
     type="submit"
     [disabled]="loginForm.invalid || loading"
     class="text-[var(--primary-color)] mt-3 font-semibold rounded-xl text-center border border-[var(--primary-color)] py-2 px-4 hover:bg-[var(--primary-color)] hover:text-white dark:hover:text-white/90 transition-colors duration-300 disabled:pointer-events-none disabled:opacity-60">
-    Iniciar sesión
+    {{ loading ? 'Iniciando' : 'Iniciar' }}
+    sesión
+    @if (loading) {
+      <i class="pi pi-spin pi-spinner"></i>
+    }
   </button>
   <strong class="text-sm"
     >¿Has olvidado tu contraseña? Haz clic aquí:

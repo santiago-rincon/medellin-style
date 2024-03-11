@@ -47,7 +47,7 @@ export interface Environments {
   localName: string;
   direction: string;
   services: BarberService[];
-  schedule: string;
+  schedule: [string, number, number];
   ubication: string;
   firebase: {
     projectId: string;
@@ -56,6 +56,15 @@ export interface Environments {
     apiKey: string;
     authDomain: string;
     messagingSenderId: string;
+  };
+  millisecondsPerDay: {
+    1: number;
+    2: number;
+    3: number;
+    4: number;
+    5: number;
+    6: number;
+    7: number;
   };
 }
 

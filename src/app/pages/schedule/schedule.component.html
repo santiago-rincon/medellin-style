@@ -95,6 +95,8 @@
       <div class="flex flex-col md:max-w-[272px] w-full">
         <label for="date" class="font-bold block mb-2">Fecha:</label>
         <p-calendar
+          (onSelect)="changeDate()"
+          (onInput)="changeDate()"
           [iconDisplay]="'input'"
           [showIcon]="true"
           inputId="date"
@@ -102,13 +104,14 @@
           dateFormat="dd/mm/yy"
           [showButtonBar]="true"
           [minDate]="minDate"
+          [maxDate]="maxDate"
+          clearButtonStyleClass="hidden"
           placeholder="{{ minDate | date: 'dd/MM/yyyy' }}"
           [disabledDays]="disabledDates"
           styleClass="@apply w-full h-12 border border-neutral-800/30 rounded-lg dark:border-none [&>input]:ps-3 [&>input]:shadow-none [&>div>.p-datepicker-buttonbar]:px-10"></p-calendar>
       </div>
       <div class="flex flex-col md:max-w-[272px] w-full">
         <label for="time" class="font-bold block mb-2">Hora:</label>
-        <!-- TODO:Agregar evento de cambio -->
         <p-dropdown
           [options]="hours"
           emptyMessage="Selecciona un barbero o cambia la fecha"
@@ -122,12 +125,61 @@
       </div>
     </div>
     <button
-      [disabled]="scheduleForm.invalid && false"
+      [disabled]="scheduleForm.invalid || loading"
       type="submit"
       class="text-[var(--primary-color)] mt-3 font-semibold rounded-full text-center border border-[var(--primary-color)] py-2 px-4 hover:bg-[var(--primary-color)] hover:text-white dark:hover:text-white/90 transition-colors duration-300 disabled:pointer-events-none disabled:opacity-60">
-      Agendar cita
-      <i class="ms-1 pi pi-calendar-plus"></i>
+      {{ loading ? 'Agendando' : 'Agendar' }}
+      cita
+      @if (loading) {
+        <i class="pi pi-spin pi-spinner"></i>
+      } @else {
+        <i class="ms-1 pi pi-calendar-plus"></i>
+      }
     </button>
   </div>
 </form>
-{{ suscriptions.length }}
+<p-dialog
+  [visible]="modalVisible"
+  styleClass="px-6 py-12 bg-white dark:bg-[#121212] max-w-xl flex flex-col gap-y-3">
+  <ng-template pTemplate="headless" class="backdrop-blur">
+    <h3 class="uppercase text-center text-balance text-2xl font-bold">
+      Turno agendado
+    </h3>
+    <p>
+      {{ turn.clientName.split(' ')[0] }}, turno fue agendado correctamente, a
+      continuación se muestra un resumen.
+    </p>
+    @if (currentUser === null) {
+      <strong
+        >Nota: recuerda que no has iniciado sesión, por lo cual no podrás
+        consultar o cancelar tu cita desde la web.</strong
+      >
+    }
+    <ul class="flex flex-col gap-y-1">
+      <li><strong>Barbero: </strong>{{ turn.barberName }}</li>
+      <li>
+        <strong>Teléfono: </strong>{{ turn.barberPhone }} (en caso que necesites
+        comunicarte)
+      </li>
+      <li><strong>Servicio: </strong>{{ turn.service }}</li>
+      <li>
+        <strong>Precio: </strong
+        >{{
+          services[scheduleForm.value.service ?? 0].price
+            | currency: '$' : 'symbol' : '3.0'
+        }}
+      </li>
+      <li>
+        <strong>Fecha: </strong
+        >{{ turn.date.toDate() | date: 'EEEE d, MMMM y' }}
+      </li>
+      <li><strong>Hora: </strong>{{ turn.date.toDate() | date: 'h:mm a' }}</li>
+    </ul>
+    <button
+      type="button"
+      (click)="modalVisible = false"
+      class="absolute top-3 right-5 hover:scale-110 transition-transform">
+      <i class="pi pi-times"></i>
+    </button>
+  </ng-template>
+</p-dialog>

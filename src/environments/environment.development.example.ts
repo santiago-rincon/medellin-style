@@ -12,7 +12,7 @@ export const environment: Environments = {
     { id: 4, service: 'Corte de cabello + cejas', price: 16000 },
     { id: 5, service: 'Corte de cabello + cejas + barba', price: 18000 },
   ],
-  schedule: 'Lunes - Sabado 10:00 AM - 8:00 PM',
+  schedule: ['Lunes - Sabado 9:00 AM - 8:00 PM', 900, 2000],
   ubication: 'https://maps.app.goo.gl/xxxxxxxxxxxx',
   firebase: {
     apiKey: '<YOUR_GoogleAPIKey_HERE>',
@@ -21,5 +21,14 @@ export const environment: Environments = {
     storageBucket: 'XXXXXXXXXXXXXXXXXXXXXXXXXXX',
     messagingSenderId: 'XXXXXXXXXXXXXXXXXXXXXXXXXXX',
     appId: 'XXXXXXXXXXXXXXXXXXXXXXXXXXX',
+  },
+  millisecondsPerDay: {
+    1: 86400000,
+    2: 172800000,
+    3: 259200000,
+    4: 345600000,
+    5: 432000000,
+    6: 518400000,
+    7: 604800000,
   },
 };

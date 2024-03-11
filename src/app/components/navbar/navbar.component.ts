@@ -1,10 +1,11 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { MenubarModule } from 'primeng/menubar';
 import { ButtonModule } from 'primeng/button';
 import { ToggleThemeService } from '@services/toggle-theme.service';
 import { FireAuthService } from '@services/fire-auth.service';
 import { ToastrService } from 'ngx-toastr';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-navbar',
@@ -13,8 +14,9 @@ import { ToastrService } from 'ngx-toastr';
   providers: [ToggleThemeService],
   templateUrl: './navbar.component.html',
 })
-export class NavbarComponent implements OnInit {
+export class NavbarComponent implements OnInit, OnDestroy {
   private theme = '';
+  private suscription!: Subscription;
   private toastSvc = inject(ToastrService);
   private fireAuth = inject(FireAuthService);
   toggleIcon = 'pi pi-spin pi-spinner';
@@ -51,7 +53,7 @@ export class NavbarComponent implements OnInit {
   activeItem = this.items[0];
 
   ngOnInit(): void {
-    this.fireAuth.currentUser$.subscribe(user => {
+    this.suscription = this.fireAuth.currentUser$.subscribe(user => {
       if (user !== null) {
         this.items = this.items.map((item, index) => {
           if (index === 0 || index === 1) return item;
@@ -80,6 +82,10 @@ export class NavbarComponent implements OnInit {
       this.toggleScv.switchTheme(isDark);
       document.documentElement.classList.toggle('dark', isDark);
     }
+  }
+
+  ngOnDestroy(): void {
+    this.suscription.unsubscribe();
   }
 
   onClick() {

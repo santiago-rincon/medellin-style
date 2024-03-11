@@ -1,7 +1,7 @@
 import { calendarConfig, fields } from './config';
 import { CalendarModule } from 'primeng/calendar';
-import { Component, OnInit, inject } from '@angular/core';
-import { AsyncPipe, CurrencyPipe, DatePipe, JsonPipe } from '@angular/common';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import { DividerModule } from 'primeng/divider';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
@@ -18,8 +18,20 @@ import { environment } from 'src/environments/environment.development';
 import { ToastrService } from 'ngx-toastr';
 import { BarberInfo, HandleSuscription, Turn } from '@types';
 import { FirestoreService } from '@services/firestore.service';
-import { Observable } from 'rxjs';
+import { Observable, Subject, debounceTime } from 'rxjs';
 import { FireAuthService } from '@services/fire-auth.service';
+import {
+  getBusyHours,
+  generateHours,
+  buildDate,
+} from '@utils/hourManipulation';
+import { Timestamp } from '@angular/fire/firestore';
+import { DialogModule } from 'primeng/dialog';
+import { User } from '@angular/fire/auth';
+import localeEs from '@angular/common/locales/es-CO';
+import { registerLocaleData } from '@angular/common';
+import { LOCALE_ID } from '@angular/core';
+registerLocaleData(localeEs, 'es-CO');
 @Component({
   selector: 'app-schedule',
   standalone: true,
@@ -33,24 +45,42 @@ import { FireAuthService } from '@services/fire-auth.service';
     DropdownModule,
     DividerModule,
     CurrencyPipe,
-    AsyncPipe,
-    JsonPipe,
+    DialogModule,
   ],
+  providers: [{ provide: LOCALE_ID, useValue: 'es-CO' }],
   templateUrl: './schedule.component.html',
 })
-export class ScheduleComponent implements OnInit {
+export class ScheduleComponent implements OnInit, OnDestroy {
   private readonly config = inject(PrimeNGConfig);
   private readonly toastScv = inject(ToastrService);
   private readonly firestoreSvc = inject(FirestoreService);
   private readonly fireAuth = inject(FireAuthService);
   private readonly currentUser$ = this.fireAuth.currentUser$;
-  minDate = new Date();
-  disabledDates = [0];
-  barbers: BarberInfo[] = [];
-  suscriptions: HandleSuscription[] = []; //TODO:Private
-  services = environment.services;
+  private readonly millisecondsPerDay = environment.millisecondsPerDay;
+  private readonly schedule = environment.schedule;
+  private dateSubject$ = new Subject<null>();
   private busyTurns: Turn[] = [];
+  private clientUuid: string | null = null;
+  private suscriptions: HandleSuscription[] = [];
+  barbers: BarberInfo[] = [];
+  currentUser: User | null = null;
+  loading = false;
+  modalVisible = false;
+  turn: Turn = {
+    barberName: '',
+    barberPhone: '',
+    clientName: '',
+    clientPhone: '',
+    date: Timestamp.fromDate(new Date()),
+    service: '',
+    uuidBarber: '',
+    uuidClient: '',
+  };
+  disabledDates = [0];
   hours: { hour: number; hourF: string }[] = [];
+  minDate = new Date();
+  maxDate = new Date(this.minDate.getTime() + this.millisecondsPerDay[4]);
+  services = environment.services;
   scheduleForm = new FormGroup({
     barber: new FormControl<string | null>(null, {
       validators: [Validators.required],
@@ -86,43 +116,108 @@ export class ScheduleComponent implements OnInit {
       this.barbers = barbers;
     });
     const currentUser = this.currentUser$.subscribe(user => {
+      this.currentUser = user;
       if (user !== null) {
         this.scheduleForm.controls.client.setValue(user.displayName);
         this.scheduleForm.controls.phone.setValue(user.phoneNumber);
+        this.clientUuid = user.uid;
+      } else {
+        this.toastScv.info(
+          'Podrás agendar citas, pero no cancelarlas desde la web.',
+          'No has iniciado sesión'
+        );
       }
     });
+    const changeDate = this.dateSubject$
+      .pipe(debounceTime(500))
+      .subscribe(() => {
+        if (
+          this.scheduleForm.value.date === null ||
+          this.scheduleForm.value.date === undefined
+        ) {
+          this.hours = [];
+          return;
+        }
+        if (
+          this.disabledDates.includes(this.scheduleForm.value.date.getDay())
+        ) {
+          this.hours = [];
+          return;
+        }
+        const barber = this.barbers.find(
+          b => b.uuid === this.scheduleForm.value.barber
+        );
+        if (barber === undefined) return;
+        const busyTurnByBarber = this.busyTurns.filter(
+          t => t.uuidBarber === barber.uuid
+        );
+        const busyHours = getBusyHours(
+          busyTurnByBarber,
+          this.scheduleForm.value.date
+        );
+        this.hours = generateHours(barber, busyHours);
+      });
     this.suscriptions.push({ id: 'barbersList', suscription: barbersList });
     this.suscriptions.push({ id: 'currentUser', suscription: currentUser });
+    this.suscriptions.push({ id: 'changeDate', suscription: changeDate });
   }
 
-  onSubmit() {
-    // const values = Object.entries(this.scheduleForm.value);
-    // for (const i of values) {
-    //   if (i[1] === null || i[1] === '') {
-    //     this.toastScv.error(
-    //       `El campo ${fields[i[0] as keyof typeof fields]} es requerido`,
-    //       'Error'
-    //     );
-    //     return;
-    //   }
-    // }
-    // const { barber, client, date, hour, phone, service } =
-    //   this.scheduleForm.value;
-    // if (date?.getDay() === 0) {
-    //   this.toastScv.error(
-    //     'El día domingo no hay servicio, selecciona otro día',
-    //     'Error'
-    //   );
-    //   return;
-    // }
-    // TODO verificar fecha minima y maxima
-    // console.log(date);
-    // const info = {
-    //   service: this.services[service as number],
-    //   client,
-    //   phone: phone?.replace(/-/g, ''),
-    //   date,
-    // };
+  ngOnDestroy() {
+    this.suscriptions.forEach(s => s.suscription?.unsubscribe());
+  }
+
+  async onSubmit() {
+    this.loading = true;
+    const values = Object.entries(this.scheduleForm.value);
+    for (const i of values) {
+      if (i[1] === null || i[1] === '' || i[1] === undefined) {
+        this.toastScv.error(
+          `El campo ${fields[i[0] as keyof typeof fields]} es requerido`,
+          'Error'
+        );
+        this.loading = false;
+        return;
+      }
+    }
+    if (!this.validationsSubmit()) {
+      this.loading = false;
+      return;
+    }
+    const { barber, client, date, hour, phone, service } =
+      this.scheduleForm.value;
+    const selectedBarber = this.barbers.find(b => b.uuid === barber);
+    const dateTimestamp = buildDate(date as Date, hour as number);
+    if (dateTimestamp.getTime() < new Date().getTime()) {
+      this.toastScv.error('No puedes agendar a esta hora', 'Error');
+      this.loading = false;
+      return;
+    }
+    if (selectedBarber === undefined) return;
+    const newTurn: Turn = {
+      barberName: selectedBarber.name,
+      barberPhone: selectedBarber.phone,
+      clientName: client as string,
+      clientPhone: phone as string,
+      date: Timestamp.fromDate(dateTimestamp),
+      service: this.services[service as number].service,
+      uuidBarber: selectedBarber.uuid,
+      uuidClient: this.clientUuid !== null ? this.clientUuid : '',
+    };
+    this.turn = newTurn;
+    try {
+      await this.firestoreSvc.addTurn(newTurn);
+      this.modalVisible = true;
+      this.scheduleForm.controls.barber.setValue(null);
+      this.scheduleForm.controls.service.setValue(null);
+    } catch (error) {
+      this.toastScv.error(
+        'No se ha podido guardar el turno, intentalo más tarde',
+        'Error'
+      );
+      return;
+    } finally {
+      this.loading = false;
+    }
   }
 
   changeBarber(value: string | null) {
@@ -136,95 +231,98 @@ export class ScheduleComponent implements OnInit {
       this.hours = [];
       return;
     }
+    if (
+      this.scheduleForm.value.date === null ||
+      this.scheduleForm.value.date === undefined
+    ) {
+      this.hours = [];
+      return;
+    }
+    if (this.disabledDates.includes(this.scheduleForm.value.date.getDay())) {
+      this.hours = [];
+      return;
+    }
     const barber = this.barbers.find(b => b.uuid === value);
     if (barber === undefined) return;
     const { uuid } = barber;
-    const data = this.firestoreSvc.getTurnsByUuid(
-      uuid,
-      'uuidBarber'
-    ) as Observable<Turn[]>;
-    const turnsList = data.subscribe(turns => {
-      this.busyTurns = turns;
-      const busyHours = this.getBusyHours(turns);
-      this.hours = this.generateHours(barber, busyHours);
-    });
-    if (indexCurrentSuscription === -1) {
-      this.suscriptions.push({ id: 'turnsList', suscription: turnsList });
+    const localData = this.busyTurns.filter(t => t.uuidBarber === uuid);
+    if (localData.length > 0) {
+      const busyHours = getBusyHours(localData, this.scheduleForm.value.date);
+      this.hours = generateHours(barber, busyHours);
     } else {
-      this.suscriptions[indexCurrentSuscription] = {
-        ...this.suscriptions[indexCurrentSuscription],
-        suscription: turnsList,
-      };
+      const fireDate = this.firestoreSvc.getTurnsByUuid(
+        uuid,
+        'uuidBarber'
+      ) as Observable<Turn[]>;
+      const turnsList = fireDate.subscribe(turns => {
+        this.busyTurns = [...this.busyTurns, ...turns];
+        const busyHours = getBusyHours(turns, this.scheduleForm.value.date);
+        this.hours = generateHours(barber, busyHours);
+      });
+      if (indexCurrentSuscription === -1) {
+        this.suscriptions.push({ id: 'turnsList', suscription: turnsList });
+      } else {
+        this.suscriptions[indexCurrentSuscription] = {
+          ...this.suscriptions[indexCurrentSuscription],
+          suscription: turnsList,
+        };
+      }
     }
   }
 
   changeDate() {
-    const barber = this.barbers.find(
-      b => b.uuid === this.scheduleForm.value.barber
-    );
-    if (barber === undefined) return;
-    const busyHours = this.getBusyHours(this.busyTurns);
-    this.hours = this.generateHours(barber, busyHours);
+    this.dateSubject$.next(null);
   }
 
-  private getBusyHours(turns: Turn[]) {
-    const selectedDate = this.scheduleForm.value.date;
-    if (selectedDate === null || selectedDate === undefined) return [];
-    const busyTurns = turns.filter(t => {
-      const date = t.date.toDate();
-      return (
-        date.getDate() === selectedDate.getDate() &&
-        date.getMonth() === selectedDate.getMonth() &&
-        date.getFullYear() === selectedDate.getFullYear()
+  private validationsSubmit() {
+    const { barber, date, hour, service } = this.scheduleForm.value;
+    if (this.barbers.find(b => b.uuid === barber) === undefined) {
+      this.toastScv.error(
+        'El barbero seleccionado no se encuentra en la base de datos',
+        'Error'
       );
-    });
-    if (busyTurns.length === 0) return [];
-    return busyTurns.map(t => {
-      const date = t.date.toDate();
-      const busy =
-        date.getHours().toString() +
-        date.getMinutes().toString().padStart(2, '0');
-      return Number(busy);
-    });
-  }
-
-  private generateHours(barber: BarberInfo, busyHours: number[]) {
-    let { firstTurn, lastTurn, steps, rest } = barber;
-    let hours = [];
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      if (firstTurn >= lastTurn) {
-        break;
-      }
-      if (Number(firstTurn.toString().slice(-2)) > 59) {
-        firstTurn = hours[hours.length - 1].hour + steps + 40;
-      }
-      if (firstTurn >= rest[0] && firstTurn < rest[1]) {
-        firstTurn = rest[1];
-      }
-      if (busyHours.includes(firstTurn)) {
-        firstTurn += steps;
-        if (Number(firstTurn.toString().slice(-2)) > 59) {
-          firstTurn += 40;
-        }
-        continue;
-      }
-      hours.push({ hour: firstTurn, hourF: this.formatHour(firstTurn) });
-      firstTurn += steps;
+      return false;
     }
-    return hours;
-  }
+    if (this.services.find(s => s.id === service) === undefined) {
+      this.toastScv.error(
+        'El servicio seleccionado no se encuentra disponible',
+        'Error'
+      );
+      return false;
+    }
+    const regex = /3\d{9}/;
+    const phone = this.scheduleForm.value.phone?.replaceAll('-', '');
+    if (phone === undefined || !regex.test(phone)) {
+      this.toastScv.error('El teléfono no es válido', 'Error');
+      return false;
+    }
 
-  private formatHour(value: number) {
-    const hour = value.toString();
-    const lengthHour = hour.length;
-    if (lengthHour < 3) return value.toString();
-    const firstDigitsOriginal = hour.slice(0, lengthHour - 2);
-    const firstDigits =
-      Number(firstDigitsOriginal) > 12
-        ? (Number(firstDigitsOriginal) - 12).toString()
-        : firstDigitsOriginal;
-    const lastDigits = hour.slice(-2);
-    return `${firstDigits}:${lastDigits} ${Number(firstDigitsOriginal) >= 12 ? 'PM' : 'AM'}`;
+    if (date?.getDay() === 0) {
+      this.toastScv.error(
+        'El día domingo no hay servicio, selecciona otro día',
+        'Error'
+      );
+      return false;
+    }
+    const minDateTimestamp = this.minDate.setHours(0, 0, 0, 0);
+    const maxDateTimestamp = this.maxDate.setHours(23, 59, 59, 0);
+    if (
+      date!.getTime() < minDateTimestamp ||
+      date!.getTime() > maxDateTimestamp
+    ) {
+      this.toastScv.error(
+        'No puedes pedir turnos en la fecha seleccionada',
+        'Error'
+      );
+      return false;
+    }
+    if (hour! < this.schedule[1] || hour! > this.schedule[2]) {
+      this.toastScv.error(
+        'No puedes pedir turnos fuera del horario de atención',
+        'Error'
+      );
+      return false;
+    }
+    return true;
   }
 }
