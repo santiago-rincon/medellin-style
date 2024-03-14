@@ -1,0 +1,61 @@
+<div class="relative overflow-x-auto shadow-md shadow-black/40 rounded-lg">
+  <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+    <thead
+      class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
+      <tr>
+        <th scope="col" class="px-2 py-3 min-w-24">
+          {{ isBarber ? 'Cliente' : 'Barbero' }}
+        </th>
+        <th scope="col" class="px-2 py-3 min-w-24">Fecha</th>
+        <th scope="col" class="px-2 py-3 min-w-24">Hora</th>
+        <th scope="col" class="px-2 py-3 min-w-24">Servicio</th>
+        <th scope="col" class="px-2 py-3 min-w-24">Teléfono</th>
+        <th scope="col" class="px-2 py-3 min-w-24">Cancelar</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of data; track item.date) {
+        <tr
+          class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+          <th
+            scope="row"
+            class="px-2 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+            {{ isBarber ? item.clientName : item.barberName }}
+          </th>
+          <td class="px-2 py-4">
+            {{ item.date.toDate() | date: 'EEEE d, MMMM y' }}
+          </td>
+          <td class="px-2 py-4">{{ item.date.toDate() | date: 'h:mm a' }}</td>
+          <td class="px-2 py-4">{{ item.service }}</td>
+          <td
+            class="px-2 py-4 flex flex-col gap-y-1 lg:flex-row items-center tabular-nums">
+            {{ isBarber ? item.clientPhone : item.barberPhone }}
+            <div class="px-4">
+              <a
+                class="hover:scale-105 inline-block transition-transform"
+                href="tel:{{ isBarber ? item.clientPhone : item.barberPhone }}">
+                <i class="pi pi-phone px-1 text-blue-600"></i>
+              </a>
+              <a
+                class="hover:scale-105 inline-block transition-transform"
+                rel="noopener noreferrer"
+                target="_blank"
+                href="https://wa.me/57{{
+                  isBarber ? item.clientPhone : item.barberPhone
+                }}">
+                <i class="pi pi-whatsapp px-1 text-[#0dc143]"></i>
+              </a>
+            </div>
+          </td>
+          <td class="px-2 py-4 text-center">
+            <button
+              class="hover:scale-105 inline-block transition-transform"
+              (click)="deleteDoc(item.id)">
+              <i class="pi pi-trash text-red-600"></i>
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

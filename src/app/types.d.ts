@@ -32,6 +32,7 @@ export interface Turn {
   clientName: string;
   clientPhone: string;
   date: Timestamp;
+  id?: string;
   service: string;
   uuidBarber: string;
   uuidClient: string;

@@ -19,7 +19,7 @@ import { ToastrService } from 'ngx-toastr';
 import { BarberInfo, HandleSuscription, Turn } from '@types';
 import { FirestoreService } from '@services/firestore.service';
 import { Observable, Subject, debounceTime } from 'rxjs';
-import { FireAuthService } from '@services/fire-auth.service';
+import { FireAuthService } from '@services/fireauth.service';
 import {
   getBusyHours,
   generateHours,
@@ -197,7 +197,7 @@ export class ScheduleComponent implements OnInit, OnDestroy {
       barberName: selectedBarber.name,
       barberPhone: selectedBarber.phone,
       clientName: client as string,
-      clientPhone: phone as string,
+      clientPhone: phone?.replaceAll('-', '') as string,
       date: Timestamp.fromDate(dateTimestamp),
       service: this.services[service as number].service,
       uuidBarber: selectedBarber.uuid,
@@ -326,3 +326,4 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     return true;
   }
 }
+//TODO Refactorizar la consulta de turnos

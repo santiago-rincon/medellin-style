@@ -6,7 +6,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { FireAuthService } from '@services/fire-auth.service';
+import { FireAuthService } from '@services/fireauth.service';
 import { ToastrService } from 'ngx-toastr';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';

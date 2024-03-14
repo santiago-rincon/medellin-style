@@ -1,1 +1,60 @@
-hola
+@if (isBarber === undefined || loading || turns === undefined) {
+  <div class="flex justify-center items-center w-full h-full mx-auto absolute">
+    <i
+      class="pi pi-spin pi-spinner text-neutral-600 dark:text-white text-6xl self-center"></i>
+  </div>
+} @else {
+  <div class="max-w-5xl mx-auto px-6 py-10 min-[1100px]:px-0 overflow-hidden">
+    <h2
+      class="uppercase font-bold text-2xl lg:text-3xl text-center text-balance mb-8">
+      Hola
+      {{
+        user !== null && user.displayName !== null
+          ? user.displayName.split(' ')[0]
+          : ''
+      }}, bienvenido de vuelta
+    </h2>
+    @if (turns !== undefined && turns.length > 0) {
+      <p class="mb-8 text-pretty">
+        @if (isBarber) {
+          A continuación se muestra los turnos que tienes agendados. Recuerda
+          que puedes cancelar los turnos de tus clientes haciendo clic en el
+          botón rojo del final de la tabla. Si lo haces, llámalos o escríbeles a
+          través de WhatsApp dando clic en cualquiera de los iconos que se
+          muestran junto al número telefónico del cliente.
+        } @else {
+          A continuación se muestra los turnos que tienes agendados. Recuerda
+          que puedes cancelar tus turnos haciendo clic en el botón rojo del
+          final de la tabla. Podrás llamar o escríbele a tu barbero a través de
+          WhatsApp dando clic en cualquiera de los iconos que se muestran junto
+          al número telefónico.
+        }
+      </p>
+      <app-table
+        [data]="turns"
+        [isBarber]="isBarber"
+        class="block"
+        (delete)="deleteDoc($event)" />
+      <span class="flex mt-3 items-center gap-x-2 md:hidden"
+        >Desliza a la derecha <i class="pi pi-arrow-right"></i
+      ></span>
+      @if (showButton) {
+        <button
+          [disabled]="loadingMore"
+          class="mt-8 text-[var(--primary-color)] block mx-auto font-semibold rounded-full text-center border border-[var(--primary-color)] py-2 px-4 hover:bg-[var(--primary-color)] hover:text-white dark:hover:text-white/90 transition-colors duration-300 disabled:pointer-events-none disabled:opacity-60"
+          (click)="loadMoreResults()">
+          {{ loadingMore ? 'Cargando' : 'Cargar' }}
+          más resultados
+          @if (loadingMore) {
+            <i class="pi pi-spin pi-spinner"></i>
+          } @else {
+            <i class="ms-1 pi pi-arrow-circle-down"></i>
+          }
+        </button>
+      }
+    } @else {
+      no hay
+    }
+  </div>
+}
+<!-- TODO Agregar template cuando no haya turnos -->

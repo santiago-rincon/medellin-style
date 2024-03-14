@@ -3,9 +3,10 @@ import { MenuItem } from 'primeng/api';
 import { MenubarModule } from 'primeng/menubar';
 import { ButtonModule } from 'primeng/button';
 import { ToggleThemeService } from '@services/toggle-theme.service';
-import { FireAuthService } from '@services/fire-auth.service';
+import { FireAuthService } from '@services/fireauth.service';
 import { ToastrService } from 'ngx-toastr';
 import { Subscription } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-navbar',
@@ -19,6 +20,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   private suscription!: Subscription;
   private toastSvc = inject(ToastrService);
   private fireAuth = inject(FireAuthService);
+  private readonly router = inject(Router);
   toggleIcon = 'pi pi-spin pi-spinner';
   toggleScv = inject(ToggleThemeService);
   items: MenuItem[] = [
@@ -43,6 +45,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
         try {
           await this.fireAuth.signOut();
           this.toastSvc.success('Sesión cerrada correctamente', 'Gracias');
+          this.router.navigate(['/sign']);
         } catch (e) {
           this.toastSvc.error('No se ha podido cerrar la sesión', 'Error');
         }

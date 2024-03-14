@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { authenticatedGuard } from '@guards/authenticated.guard';
 
 export const routes: Routes = [
   {
@@ -27,6 +28,7 @@ export const routes: Routes = [
     path: 'profile',
     loadComponent: () =>
       import('@pages/profile/profile.component').then(c => c.ProfileComponent),
+    canActivate: [authenticatedGuard],
   },
   {
     path: '**',

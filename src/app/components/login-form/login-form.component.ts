@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { DividerModule } from 'primeng/divider';
-import { FireAuthService } from '@services/fire-auth.service';
+import { FireAuthService } from '@services/fireauth.service';
 import { FirebaseError } from '@angular/fire/app';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputGroupModule } from 'primeng/inputgroup';
@@ -67,7 +67,6 @@ export class LoginFormComponent {
       this.modalVisible = false;
     } catch (error) {
       if (error instanceof FirebaseError) {
-        console.log(error.code);
         const message = this.fireAuth.checkErrorMessage(error.code);
         this.toastSvc.error(message, 'Error');
       } else {
@@ -102,7 +101,6 @@ export class LoginFormComponent {
       this.loginForm.reset();
     } catch (error) {
       if (error instanceof FirebaseError) {
-        console.log(error.code);
         const message = this.fireAuth.checkErrorMessage(error.code, email);
         this.toastSvc.error(message, 'Error');
       } else {

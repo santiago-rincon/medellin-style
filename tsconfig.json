@@ -25,7 +25,8 @@
       "@pages/*": ["src/app/pages/*"],
       "@services/*": ["src/app/services/*"],
       "@types": ["src/app/types.d.ts"],
-      "@utils/*": ["src/app/utils/*"]
+      "@utils/*": ["src/app/utils/*"],
+      "@guards/*": ["src/app/guards/*"]
     }
   },
   "angularCompilerOptions": {
