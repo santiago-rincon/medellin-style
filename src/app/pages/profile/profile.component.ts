@@ -1,5 +1,7 @@
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { User } from '@angular/fire/auth';
+import { EmptyTurnsComponent } from '@components/empty-turns/empty-turns.component';
+import { ProfilePreferentsComponent } from '@components/profile-preferents/profile-preferents.component';
 import { TableComponent } from '@components/table/table.component';
 import { FireAuthService } from '@services/fireauth.service';
 import { FirestoreService } from '@services/firestore.service';
@@ -9,21 +11,22 @@ import { Observable, Subject, take } from 'rxjs';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [TableComponent],
+  imports: [TableComponent, EmptyTurnsComponent, ProfilePreferentsComponent],
   templateUrl: './profile.component.html',
 })
 export class ProfileComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
   private readonly fireAuth = inject(FireAuthService);
   private readonly fireStore = inject(FirestoreService);
   private readonly LIMIT = 5;
   private readonly toastSvc = inject(ToastrService);
-  private destroy$ = new Subject<void>();
+  barber: BarberInfo | undefined = undefined;
   isBarber: boolean | undefined = undefined;
-  showButton = false;
-  loadingMore = false;
-  user: User | null = null;
-  turns: Turn[] | undefined = undefined;
   loading = false;
+  loadingMore = false;
+  showButton = false;
+  turns: Turn[] | undefined = undefined;
+  user: User | null = null;
   ngOnInit() {
     this.loading = true;
     const user = this.fireAuth.getCurrentUser();
@@ -34,9 +37,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
     }
     const barbers = this.fireStore.getBarbers() as Observable<BarberInfo[]>;
     barbers.pipe(take(1)).subscribe(barbers => {
+      this.barber = barbers.find(b => b.uuid === user.uid);
       const isBarber = barbers.some(barber => barber.uuid === user.uid);
       this.isBarber = isBarber;
-      let turns$ = this.fireStore
+      const turns$ = this.fireStore
         .getTurnsByUuuidLimit({
           dataLimit: this.LIMIT,
           lastTurn: undefined,
@@ -61,7 +65,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
       uuidField: this.isBarber ? 'uuidBarber' : 'uuidClient',
     });
     turns$.pipe(take(1)).subscribe(t => {
-      console.log(t);
       this.turns = [...this.turns!, ...t];
       this.showButton = t.length === this.LIMIT;
       this.loadingMore = false;
@@ -72,10 +75,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
     try {
       await this.fireStore.deleteTurn(id);
       this.turns = this.turns?.filter(turn => turn.id !== id);
-      this.toastSvc.success(
-        'El turno ha sido cancelado, recuerda informarle al cliente',
-        'Turno cancelado'
-      );
+      const message = this.isBarber
+        ? 'El turno ha sido cancelado, recuerda informarle al cliente'
+        : 'El turno ha sido cancelado';
+      this.toastSvc.success(message, 'Turno cancelado');
     } catch (error) {
       this.toastSvc.error(
         'Ha ocurrido un error al cancelar el turno, intentalo más tarde',
@@ -88,6 +91,4 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
   }
-  //TODO cargar solo los turnos mayores a hoy
-  //TODO agregar configuración del barbero
 }

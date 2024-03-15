@@ -67,6 +67,7 @@ export interface Environments {
     6: number;
     7: number;
   };
+  baseUrl: string;
 }
 
 type colSpanMobile =

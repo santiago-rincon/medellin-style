@@ -18,7 +18,6 @@ export class TableComponent {
   @Output() readonly delete = new EventEmitter<string>();
 
   deleteDoc(id: string | undefined) {
-    console.log(id);
     if (id === undefined) return;
     this.delete.emit(id);
   }

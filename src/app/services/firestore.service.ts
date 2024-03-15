@@ -11,6 +11,7 @@ import {
   orderBy,
   startAfter,
   deleteDoc,
+  Timestamp,
 } from '@angular/fire/firestore';
 import { Turn } from '@types';
 import { Observable } from 'rxjs';
@@ -28,20 +29,37 @@ export class FirestoreService {
     return collectionData(collectionRef);
   }
 
-  getTurnsByUuid(uuid: string, uuidField: 'uuidBarber' | 'uuidClient') {
+  getTurnsByUuid(
+    uuid: string,
+    uuidField: 'uuidBarber' | 'uuidClient',
+    date: Timestamp
+  ) {
+    const objDate = date.toDate();
+    const nextDay = new Date(
+      objDate.getFullYear(),
+      objDate.getMonth(),
+      objDate.getDate() + 1
+    );
     const collectionRef = collection(this.firestore, 'turns');
-    const data = query(collectionRef, where(uuidField, '==', uuid));
+    const data = query(
+      collectionRef,
+      where(uuidField, '==', uuid),
+      where('date', '>=', date),
+      where('date', '<', nextDay)
+    );
     return collectionData(data);
   }
 
   getTurnsByUuuidLimit({ uuid, uuidField, dataLimit, lastTurn }: Params) {
     const collectionRef = collection(this.firestore, 'turns');
+    const date = Timestamp.fromDate(new Date());
     let data;
     if (lastTurn === undefined) {
       data = query(
         collectionRef,
         orderBy('date'),
         where(uuidField, '==', uuid),
+        where('date', '>=', date),
         limit(dataLimit)
       );
     } else {
@@ -49,6 +67,7 @@ export class FirestoreService {
         collectionRef,
         orderBy('date'),
         where(uuidField, '==', uuid),
+        where('date', '>=', date),
         startAfter(lastTurn.date),
         limit(dataLimit)
       );

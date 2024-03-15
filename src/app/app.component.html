@@ -1,8 +1,15 @@
 <div class="min-h-screen flex flex-col justify-between">
   <app-navbar />
   <main class="flex-1 relative">
-    <router-outlet />
+    @defer (on viewport) {
+      <router-outlet />
+    } @placeholder {
+      <div
+        class="flex justify-center items-center w-full h-full mx-auto absolute">
+        <i
+          class="pi pi-spin pi-spinner text-neutral-600 dark:text-white text-6xl self-center"></i>
+      </div>
+    }
   </main>
   <app-footer />
 </div>
-<!-- TODO agregar carga diferida del footer -->

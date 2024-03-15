@@ -52,9 +52,31 @@
           }
         </button>
       }
+      @defer (on interaction) {
+        <span class="mt-8 block font-semibold"
+          ><i class="pi pi-angle-down"></i> ¿Deseas compartir esta página? Haz
+          clic aquí</span
+        >
+        <app-empty-turns [isBarber]="isBarber" [showText]="false" />
+      } @placeholder {
+        <span class="mt-8 block hover:cursor-pointer font-semibold"
+          ><i class="pi pi-angle-right"></i> ¿Deseas compartir esta página? Haz
+          clic aquí</span
+        >
+      }
     } @else {
-      no hay
+      <app-empty-turns [isBarber]="isBarber" />
     }
+    <!-- @defer (on interaction) {
+      <app-profile-preferents
+        [barber]="barber"
+        [isBarber]="isBarber"
+        [user]="user" />
+    } @placeholder {
+      <span class="mt-8 block p-0 md:px-10"
+        ><i class="pi pi-angle-right"></i> Editar tus preferencias</span
+      >
+    } -->
+    <!-- TODO Hacer formulario -->
   </div>
 }
-<!-- TODO Agregar template cuando no haya turnos -->

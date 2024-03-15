@@ -31,4 +31,5 @@ export const environment: Environments = {
     6: 518400000,
     7: 604800000,
   },
+  baseUrl: 'https://dominio.com', // url de producción o de desarrollo segun corresponda para cada fichero
 };

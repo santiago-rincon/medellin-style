@@ -1,0 +1,137 @@
+<span class="mt-8 block p-0 md:px-10"
+  ><i class="pi pi-angle-down"></i> Editar tus preferencias</span
+>
+<form
+  class="max-w-5xl w-full mx-auto mt-8"
+  [formGroup]="updatePreferentsForm"
+  (submit)="onSubmit()">
+  <div
+    class="flex flex-col items-center mt-5 max-w-xl mx-auto gap-y-3 px-8 sm:px-4 md:px-0">
+    <!-- Name and phone -->
+    <p-divider
+      align="left"
+      type="solid"
+      class="w-full [&>div]:before:h-[1px] [&>div]:before:border [&>div]:before:border-neutral-800/20 [&>div]:before:dark:border-neutral-500/50 [&>div>div]:dark:bg-[#121212]">
+      <b>Información general</b>
+    </p-divider>
+    <div class="flex flex-col gap-y-5 md:flex-row justify-between w-full">
+      <div class="flex flex-col gap-y-2">
+        <label for="name" class="font-semibold">Nombre:</label>
+        <p-inputGroup>
+          <p-inputGroupAddon>
+            <i class="pi pi-user"></i>
+          </p-inputGroupAddon>
+          <input
+            pInputText
+            formControlName="name"
+            class="rounded-s-none md:max-w-56 w-full h-full ps-2 border border-neutral-800/20 dark:border-none dark:bg-[#111827] focus:outline-none"
+            placeholder="Carlos Ramírez"
+            id="name" />
+        </p-inputGroup>
+      </div>
+      <div class="flex flex-col gap-y-2">
+        <label for="phone" class="font-semibold">Teléfono:</label>
+        <p-inputGroup>
+          <p-inputGroupAddon>
+            <i class="pi pi-phone"></i>
+          </p-inputGroupAddon>
+          <p-inputMask
+            formControlName="phone"
+            inputId="phone"
+            mask="999-999-9999"
+            placeholder="300-355-9999"
+            class="w-full"
+            styleClass="@apply rounded-s-none md:max-w-56 w-full h-full ps-2 border border-neutral-800/20 dark:border-none focus:shadow-none"></p-inputMask>
+        </p-inputGroup>
+      </div>
+    </div>
+    @if (isBarber && barber !== undefined) {
+      <!-- Descanso -->
+      <p-divider
+        align="left"
+        type="solid"
+        class="w-full [&>div]:before:h-[1px] [&>div]:before:border [&>div]:before:border-neutral-800/20 [&>div]:before:dark:border-neutral-500/50 [&>div>div]:dark:bg-[#121212]">
+        <b>Hora de descanso</b>
+      </p-divider>
+      <div class="flex flex-col gap-y-5 md:flex-row justify-between w-full">
+        <div class="flex flex-col gap-y-2">
+          <label for="hourStart" class="font-semibold">Hora de inicio:</label>
+          <p-inputGroup>
+            <p-inputGroupAddon>
+              <i class="pi pi-clock"></i>
+            </p-inputGroupAddon>
+            <p-inputMask
+              formControlName="hourStart"
+              inputId="hourStart"
+              mask="99:99 PM"
+              placeholder="12:00 PM"
+              class="w-full"
+              styleClass="@apply rounded-s-none md:max-w-56 w-full h-full ps-2 border border-neutral-800/20 dark:border-none focus:shadow-none"></p-inputMask>
+          </p-inputGroup>
+        </div>
+        <div class="flex flex-col gap-y-2">
+          <label for="hourEnd" class="font-semibold">Hora de fin:</label>
+          <p-inputGroup>
+            <p-inputGroupAddon>
+              <i class="pi pi-clock"></i>
+            </p-inputGroupAddon>
+            <p-inputMask
+              formControlName="hourEnd"
+              inputId="hourEnd"
+              mask="99:99 PM"
+              placeholder="1:00 PM"
+              class="w-full"
+              styleClass="@apply rounded-s-none md:max-w-56 w-full h-full ps-2 border border-neutral-800/20 dark:border-none focus:shadow-none"></p-inputMask>
+          </p-inputGroup>
+        </div>
+      </div>
+    }
+
+    <!-- Date and hour -->
+    <!-- <div class="flex flex-col gap-y-5 md:flex-row justify-between w-full">
+      <div class="flex flex-col md:max-w-[272px] w-full">
+        <label for="date" class="font-bold block mb-2">Fecha:</label>
+        <p-calendar
+          (onSelect)="changeDate()"
+          (onInput)="changeDate()"
+          [iconDisplay]="'input'"
+          [showIcon]="true"
+          inputId="date"
+          formControlName="date"
+          dateFormat="dd/mm/yy"
+          [showButtonBar]="true"
+          [minDate]="minDate"
+          [maxDate]="maxDate"
+          clearButtonStyleClass="hidden"
+          placeholder="{{ minDate | date: 'dd/MM/yyyy' }}"
+          [disabledDays]="disabledDates"
+          styleClass="@apply w-full h-12 border border-neutral-800/30 rounded-lg dark:border-none [&>input]:ps-3 [&>input]:shadow-none [&>div>.p-datepicker-buttonbar]:px-10"></p-calendar>
+      </div>
+      <div class="flex flex-col md:max-w-[272px] w-full">
+        <label for="time" class="font-bold block mb-2">Hora:</label>
+        <p-dropdown
+          [options]="hours"
+          emptyMessage="Selecciona un barbero o cambia la fecha"
+          optionLabel="hourF"
+          optionValue="hour"
+          formControlName="hour"
+          [showClear]="true"
+          inputId="time"
+          styleClass="@apply w-full border border-neutral-800/30 rounded-lg dark:border-none shadow-none"
+          placeholder="Selecciona una hora"></p-dropdown>
+      </div>
+    </div>
+    <button
+      [disabled]="scheduleForm.invalid || loading"
+      type="submit"
+      class="text-[var(--primary-color)] mt-3 font-semibold rounded-full text-center border border-[var(--primary-color)] py-2 px-4 hover:bg-[var(--primary-color)] hover:text-white dark:hover:text-white/90 transition-colors duration-300 disabled:pointer-events-none disabled:opacity-60">
+      {{ loading ? 'Agendando' : 'Agendar' }}
+      cita
+      @if (loading) {
+        <i class="pi pi-spin pi-spinner"></i>
+      } @else {
+        <i class="ms-1 pi pi-calendar-plus"></i>
+      }
+    </button> -->
+  </div>
+</form>

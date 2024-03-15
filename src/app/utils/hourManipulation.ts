@@ -1,6 +1,6 @@
 import { BarberInfo, Turn } from '@types';
 
-function formatHour(value: number) {
+export function formatHour(value: number) {
   const hour = value.toString();
   const lengthHour = hour.length;
   if (lengthHour < 3) return value.toString();
@@ -10,7 +10,7 @@ function formatHour(value: number) {
       ? (Number(firstDigitsOriginal) - 12).toString()
       : firstDigitsOriginal;
   const lastDigits = hour.slice(-2);
-  return `${firstDigits}:${lastDigits} ${Number(firstDigitsOriginal) >= 12 ? 'PM' : 'AM'}`;
+  return `${firstDigits.padStart(2, '0')}:${lastDigits} ${Number(firstDigitsOriginal) >= 12 ? 'PM' : 'AM'}`;
 }
 
 export function getBusyHours(turns: Turn[], dateForm: Date | null | undefined) {
@@ -39,7 +39,7 @@ export function generateHours(barber: BarberInfo, busyHours: number[]) {
   let hours = [];
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    if (firstTurn >= lastTurn) {
+    if (firstTurn > lastTurn) {
       break;
     }
     if (Number(firstTurn.toString().slice(-2)) > 59) {

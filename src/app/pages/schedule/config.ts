@@ -1,3 +1,4 @@
+import { Timestamp } from '@angular/fire/firestore';
 import { Translation } from 'primeng/api';
 
 export const calendarConfig: Translation = {
@@ -52,4 +53,15 @@ export const fields = {
   phone: 'teléfono',
   date: 'fecha',
   hour: 'hora',
+};
+
+export const voidTurn = {
+  barberName: '',
+  barberPhone: '',
+  clientName: '',
+  clientPhone: '',
+  date: Timestamp.fromDate(new Date()),
+  service: '',
+  uuidBarber: '',
+  uuidClient: '',
 };

@@ -24,7 +24,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   toggleIcon = 'pi pi-spin pi-spinner';
   toggleScv = inject(ToggleThemeService);
   items: MenuItem[] = [
-    { label: 'Inicio', icon: 'pi pi-fw pi-home', routerLink: 'home' },
+    { label: 'Inicio', icon: 'pi pi-fw pi-home', routerLink: '/' },
     { label: 'Agendar', icon: 'pi pi-fw pi-calendar', routerLink: 'schedule' },
     {
       label: 'Iniciar sesión',

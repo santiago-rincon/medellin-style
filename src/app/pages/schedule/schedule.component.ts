@@ -1,4 +1,4 @@
-import { calendarConfig, fields } from './config';
+import { calendarConfig, fields, voidTurn } from './config';
 import { CalendarModule } from 'primeng/calendar';
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
@@ -18,7 +18,7 @@ import { environment } from 'src/environments/environment.development';
 import { ToastrService } from 'ngx-toastr';
 import { BarberInfo, HandleSuscription, Turn } from '@types';
 import { FirestoreService } from '@services/firestore.service';
-import { Observable, Subject, debounceTime } from 'rxjs';
+import { Observable, Subject, debounceTime, take } from 'rxjs';
 import { FireAuthService } from '@services/fireauth.service';
 import {
   getBusyHours,
@@ -55,31 +55,20 @@ export class ScheduleComponent implements OnInit, OnDestroy {
   private readonly toastScv = inject(ToastrService);
   private readonly firestoreSvc = inject(FirestoreService);
   private readonly fireAuth = inject(FireAuthService);
-  private readonly currentUser$ = this.fireAuth.currentUser$;
   private readonly millisecondsPerDay = environment.millisecondsPerDay;
   private readonly schedule = environment.schedule;
   private dateSubject$ = new Subject<null>();
-  private busyTurns: Turn[] = [];
   private clientUuid: string | null = null;
   private suscriptions: HandleSuscription[] = [];
   barbers: BarberInfo[] = [];
   currentUser: User | null = null;
   loading = false;
   modalVisible = false;
-  turn: Turn = {
-    barberName: '',
-    barberPhone: '',
-    clientName: '',
-    clientPhone: '',
-    date: Timestamp.fromDate(new Date()),
-    service: '',
-    uuidBarber: '',
-    uuidClient: '',
-  };
+  turn: Turn = voidTurn;
   disabledDates = [0];
   hours: { hour: number; hourF: string }[] = [];
   minDate = new Date();
-  maxDate = new Date(this.minDate.getTime() + this.millisecondsPerDay[4]);
+  maxDate = new Date(this.minDate.getTime() + this.millisecondsPerDay[6]);
   services = environment.services;
   scheduleForm = new FormGroup({
     barber: new FormControl<string | null>(null, {
@@ -94,7 +83,7 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     phone: new FormControl<string | null>(null, {
       validators: [Validators.required],
     }),
-    date: new FormControl<Date | null>(new Date(), {
+    date: new FormControl<Date | null>(null, {
       validators: [Validators.required],
     }),
     hour: new FormControl<number | null>(null, {
@@ -104,8 +93,13 @@ export class ScheduleComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.config.setTranslation(calendarConfig);
+    const today = new Date();
+    const isDisabledDay = this.disabledDates.includes(today.getDay());
+    this.scheduleForm.controls.date.setValue(
+      isDisabledDay ? new Date(today.getTime() + 8.64e7) : today
+    );
     const barbers$ = this.firestoreSvc.getBarbers() as Observable<BarberInfo[]>;
-    const barbersList = barbers$.subscribe(barbers => {
+    barbers$.pipe(take(1)).subscribe(barbers => {
       if (barbers.length === 0) {
         this.toastScv.error(
           'No se ha podido leer la base de datos, intentalo más tarde',
@@ -115,7 +109,7 @@ export class ScheduleComponent implements OnInit, OnDestroy {
       }
       this.barbers = barbers;
     });
-    const currentUser = this.currentUser$.subscribe(user => {
+    this.fireAuth.currentUser$.pipe(take(1)).subscribe(user => {
       this.currentUser = user;
       if (user !== null) {
         this.scheduleForm.controls.client.setValue(user.displayName);
@@ -131,39 +125,9 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     const changeDate = this.dateSubject$
       .pipe(debounceTime(500))
       .subscribe(() => {
-        if (
-          this.scheduleForm.value.date === null ||
-          this.scheduleForm.value.date === undefined
-        ) {
-          this.hours = [];
-          return;
-        }
-        if (
-          this.disabledDates.includes(this.scheduleForm.value.date.getDay())
-        ) {
-          this.hours = [];
-          return;
-        }
-        const barber = this.barbers.find(
-          b => b.uuid === this.scheduleForm.value.barber
-        );
-        if (barber === undefined) return;
-        const busyTurnByBarber = this.busyTurns.filter(
-          t => t.uuidBarber === barber.uuid
-        );
-        const busyHours = getBusyHours(
-          busyTurnByBarber,
-          this.scheduleForm.value.date
-        );
-        this.hours = generateHours(barber, busyHours);
+        this.getDataFirestore();
       });
-    this.suscriptions.push({ id: 'barbersList', suscription: barbersList });
-    this.suscriptions.push({ id: 'currentUser', suscription: currentUser });
     this.suscriptions.push({ id: 'changeDate', suscription: changeDate });
-  }
-
-  ngOnDestroy() {
-    this.suscriptions.forEach(s => s.suscription?.unsubscribe());
   }
 
   async onSubmit() {
@@ -188,7 +152,10 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     const selectedBarber = this.barbers.find(b => b.uuid === barber);
     const dateTimestamp = buildDate(date as Date, hour as number);
     if (dateTimestamp.getTime() < new Date().getTime()) {
-      this.toastScv.error('No puedes agendar a esta hora', 'Error');
+      this.toastScv.error(
+        'No puedes agendar a esta hora, ya sucedio, es tarde.',
+        'Error'
+      );
       this.loading = false;
       return;
     }
@@ -206,9 +173,16 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     this.turn = newTurn;
     try {
       await this.firestoreSvc.addTurn(newTurn);
+      const indexCurrentSuscription = this.suscriptions.findIndex(
+        s => s.id === 'turnsList'
+      );
+      if (indexCurrentSuscription !== -1) {
+        this.suscriptions[indexCurrentSuscription].suscription?.unsubscribe();
+      }
       this.modalVisible = true;
       this.scheduleForm.controls.barber.setValue(null);
       this.scheduleForm.controls.service.setValue(null);
+      this.hours = [];
     } catch (error) {
       this.toastScv.error(
         'No se ha podido guardar el turno, intentalo más tarde',
@@ -220,58 +194,47 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     }
   }
 
-  changeBarber(value: string | null) {
+  changeBarber() {
+    this.getDataFirestore();
+  }
+
+  changeDate() {
+    this.dateSubject$.next(null);
+  }
+
+  private getDataFirestore() {
     const indexCurrentSuscription = this.suscriptions.findIndex(
       s => s.id === 'turnsList'
     );
     if (indexCurrentSuscription !== -1) {
       this.suscriptions[indexCurrentSuscription].suscription?.unsubscribe();
     }
-    if (value === null) {
+    if (!this.isValidDate()) return;
+    const barber = this.barbers.find(
+      b => b.uuid === this.scheduleForm.value.barber
+    );
+    if (barber === undefined) {
       this.hours = [];
       return;
     }
-    if (
-      this.scheduleForm.value.date === null ||
-      this.scheduleForm.value.date === undefined
-    ) {
-      this.hours = [];
-      return;
-    }
-    if (this.disabledDates.includes(this.scheduleForm.value.date.getDay())) {
-      this.hours = [];
-      return;
-    }
-    const barber = this.barbers.find(b => b.uuid === value);
-    if (barber === undefined) return;
     const { uuid } = barber;
-    const localData = this.busyTurns.filter(t => t.uuidBarber === uuid);
-    if (localData.length > 0) {
-      const busyHours = getBusyHours(localData, this.scheduleForm.value.date);
+    const fireDate = this.firestoreSvc.getTurnsByUuid(
+      uuid,
+      'uuidBarber',
+      Timestamp.fromDate(this.scheduleForm.value.date as Date)
+    ) as Observable<Turn[]>;
+    const turnsList = fireDate.subscribe(turns => {
+      const busyHours = getBusyHours(turns, this.scheduleForm.value.date);
       this.hours = generateHours(barber, busyHours);
+    });
+    if (indexCurrentSuscription === -1) {
+      this.suscriptions.push({ id: 'turnsList', suscription: turnsList });
     } else {
-      const fireDate = this.firestoreSvc.getTurnsByUuid(
-        uuid,
-        'uuidBarber'
-      ) as Observable<Turn[]>;
-      const turnsList = fireDate.subscribe(turns => {
-        this.busyTurns = [...this.busyTurns, ...turns];
-        const busyHours = getBusyHours(turns, this.scheduleForm.value.date);
-        this.hours = generateHours(barber, busyHours);
-      });
-      if (indexCurrentSuscription === -1) {
-        this.suscriptions.push({ id: 'turnsList', suscription: turnsList });
-      } else {
-        this.suscriptions[indexCurrentSuscription] = {
-          ...this.suscriptions[indexCurrentSuscription],
-          suscription: turnsList,
-        };
-      }
+      this.suscriptions[indexCurrentSuscription] = {
+        ...this.suscriptions[indexCurrentSuscription],
+        suscription: turnsList,
+      };
     }
-  }
-
-  changeDate() {
-    this.dateSubject$.next(null);
   }
 
   private validationsSubmit() {
@@ -325,5 +288,23 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     }
     return true;
   }
+
+  private isValidDate() {
+    if (
+      this.scheduleForm.value.date === null ||
+      this.scheduleForm.value.date === undefined
+    ) {
+      this.hours = [];
+      return false;
+    }
+    if (this.disabledDates.includes(this.scheduleForm.value.date.getDay())) {
+      this.hours = [];
+      return false;
+    }
+    return true;
+  }
+
+  ngOnDestroy() {
+    this.suscriptions.forEach(s => s.suscription?.unsubscribe());
+  }
 }
-//TODO Refactorizar la consulta de turnos

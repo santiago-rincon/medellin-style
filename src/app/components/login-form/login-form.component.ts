@@ -97,7 +97,7 @@ export class LoginFormComponent {
         `${user.displayName?.split(' ')[0]}, has iniciado sesión correctamente`,
         'Bienvenido'
       );
-      this.router.navigate(['/home']);
+      this.router.navigate(['/']);
       this.loginForm.reset();
     } catch (error) {
       if (error instanceof FirebaseError) {
@@ -122,7 +122,7 @@ export class LoginFormComponent {
         `${user.displayName?.split(' ')[0]}, has iniciado sesión correctamente`,
         'Bienvenido'
       );
-      this.router.navigate(['/home']);
+      this.router.navigate(['/']);
     } catch (error) {
       if (error instanceof FirebaseError) {
         const message = this.fireAuth.checkErrorMessage(error.code);
