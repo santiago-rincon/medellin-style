@@ -2,7 +2,7 @@ import { NgOptimizedImage } from '@angular/common';
 import { Component, Input, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
-import { environment } from 'src/environments/environment.development';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-empty-turns',
@@ -21,8 +21,8 @@ export class EmptyTurnsComponent {
       try {
         await navigator.share({
           title: `Agenda tu turno en ${this.localName}`,
-          url: this.baseUrl + '/schedule',
           text: 'Ingresano a este link podrás agendar tu turno 😀',
+          url: this.baseUrl + '/schedule',
         });
       } catch (error) {
         console.log(error);
@@ -45,6 +45,11 @@ export class EmptyTurnsComponent {
           'Error'
         );
       }
+    } else {
+      this.toastSvc.info(
+        'Tu dispositivo no soporta las funcionalidades de compartir o copiar a portapapeles, descarga el código QR y compártelo.',
+        'Lo siento'
+      );
     }
   }
 }

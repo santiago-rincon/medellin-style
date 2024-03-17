@@ -13,7 +13,7 @@ export const environment: Environments = {
     { id: 5, service: 'Corte de cabello + cejas + barba', price: 18000 },
   ],
   schedule: ['Lunes - Sabado 9:00 AM - 8:00 PM', 900, 2000],
-  ubication: 'https://maps.app.goo.gl/xxxxxxxxxxxx',
+  ubication: 'https://maps.app.goo.gl/VBi1ZRzJM2GaHdZ5A',
   firebase: {
     apiKey: '<YOUR_GoogleAPIKey_HERE>',
     authDomain: 'XXXXXXXXXXXXXXXXXXXXXXXXXXX',

@@ -1,5 +1,5 @@
 import { ApplicationConfig, importProvidersFrom } from '@angular/core';
-import { environment } from 'src/environments/environment.development';
+import { environment } from 'src/environments/environment';
 import { FireAuthService } from '@services/fireauth.service';
 import { FirestoreService } from '@services/firestore.service';
 import { getAuth, provideAuth } from '@angular/fire/auth';

@@ -14,7 +14,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { environment } from 'src/environments/environment.development';
+import { environment } from 'src/environments/environment';
 import { ToastrService } from 'ngx-toastr';
 import { BarberInfo, HandleSuscription, Turn } from '@types';
 import { FirestoreService } from '@services/firestore.service';
@@ -95,6 +95,7 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     this.config.setTranslation(calendarConfig);
     const today = new Date();
     const isDisabledDay = this.disabledDates.includes(today.getDay());
+    if (isDisabledDay) today.setHours(0, 0, 0, 0);
     this.scheduleForm.controls.date.setValue(
       isDisabledDay ? new Date(today.getTime() + 8.64e7) : today
     );
@@ -218,12 +219,14 @@ export class ScheduleComponent implements OnInit, OnDestroy {
       return;
     }
     const { uuid } = barber;
+    console.log(this.scheduleForm.value.date);
     const fireDate = this.firestoreSvc.getTurnsByUuid(
       uuid,
       'uuidBarber',
       Timestamp.fromDate(this.scheduleForm.value.date as Date)
     ) as Observable<Turn[]>;
     const turnsList = fireDate.subscribe(turns => {
+      console.log(turns);
       const busyHours = getBusyHours(turns, this.scheduleForm.value.date);
       this.hours = generateHours(barber, busyHours);
     });

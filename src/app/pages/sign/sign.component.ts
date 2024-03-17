@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 import { LoginFormComponent } from '@components/login-form/login-form.component';
 import { RegisterFormComponent } from '@components/register-form/register-form.component';
 import { ToastModule } from 'primeng/toast';
-import { environment } from 'src/environments/environment.development';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-sign',
