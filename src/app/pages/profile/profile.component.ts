@@ -1,13 +1,13 @@
+import { BarberInfo, Turn } from '@types';
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
-import { User } from '@angular/fire/auth';
 import { EmptyTurnsComponent } from '@components/empty-turns/empty-turns.component';
-import { ProfilePreferentsComponent } from '@components/profile-preferents/profile-preferents.component';
-import { TableComponent } from '@components/table/table.component';
 import { FireAuthService } from '@services/fireauth.service';
 import { FirestoreService } from '@services/firestore.service';
-import { BarberInfo, Turn } from '@types';
-import { ToastrService } from 'ngx-toastr';
 import { Observable, Subject, take } from 'rxjs';
+import { ProfilePreferentsComponent } from '@components/profile-preferents/profile-preferents.component';
+import { TableComponent } from '@components/table/table.component';
+import { ToastrService } from 'ngx-toastr';
+import { User } from '@angular/fire/auth';
 @Component({
   selector: 'app-profile',
   standalone: true,
